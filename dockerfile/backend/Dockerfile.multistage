@@ -1,0 +1,71 @@
+# # 빌드 단계 ------------------------------------
+# # 1️⃣ 베이스 이미지 설정
+# # - Java 21 JDK를 포함한 슬림 버전의 OpenJDK 이미지를 사용하여 빌드 환경 구성
+# # - `AS build`는 이 단계를 "build"라는 별칭으로 설정하여 이후 단계에서 참조할 수 있도록 함
+# FROM openjdk:21-jdk-slim AS build
+
+# # 2️⃣ 필요한 기본 패키지 설치
+# # - `dos2unix`: Windows와 Linux 간의 줄바꿈 형식(CRLF ↔ LF)을 변환하기 위해 사용
+# #   -> Windows에서 작성된 `gradlew` 스크립트 파일은 CRLF 줄바꿈을 사용할 가능성이 있음
+# #   -> 이를 Linux에서 실행 가능하도록 LF 줄바꿈 형식으로 변환 필요
+# RUN apt-get update && apt-get install -y dos2unix
+
+# # 3️⃣ 컨테이너 내부 작업 디렉토리 설정
+# # - `/app` 디렉토리를 작업 디렉토리로 지정
+# # - 모든 명령은 이 디렉토리에서 실행됨
+# WORKDIR /app
+
+# # 4️⃣ 프로젝트 전체 파일 복사
+# # - Docker 컨텍스트의 모든 파일을 컨테이너 내부 `/app` 디렉토리에 복사
+# # COPY <호스트 경로> <컨테이너 경로>
+# COPY . ./
+
+# # 5️⃣ Gradle Wrapper 설정
+# # - `gradlew` 파일의 줄바꿈 형식을 Windows(CRLF)에서 Linux(LF)로 변환
+# # - `chmod +x` 명령을 통해 `gradlew` 파일에 실행 권한 추가
+# RUN dos2unix gradlew && \
+#     chmod +x gradlew
+
+# # 6️⃣ 프로젝트 빌드
+# # - `./gradlew bootJar --no-daemon` 명령을 실행하여 Spring Boot 애플리케이션을 빌드
+# # - `bootJar`는 실행 가능한 JAR 파일을 생성함
+# RUN ./gradlew bootJar --no-daemon
+
+# # ---------------------------------------------
+
+	# 멀티 스테이지 빌드 활용 dockerfile
+
+# 빌드 단계 ------------------------------------
+# 별칭(AS) : build
+FROM openjdk:21-jdk-slim AS build
+
+# 필요한 기본 패키지 설치
+RUN apt-get update && apt-get install -y dos2unix
+
+# 컨테이너 내부 작업 디렉토리 설정
+WORKDIR /app
+
+# 프로젝트 전체 파일 복사
+COPY . ./
+
+RUN dos2unix gradlew && \
+    chmod +x gradlew
+
+# 프로젝트 빌드
+RUN ./gradlew bootJar --no-daemon
+
+# ---------------------------------------------
+# 실행 단계 ------------------------------------
+FROM eclipse-temurin:21-jre-alpine
+
+# 컨테이너 내부 작업 디렉토리 설정
+WORKDIR /app
+
+# 빌드 단계에서 생성된 JAR 파일 복사
+COPY --from=build /app/build/libs/*.jar app.jar
+
+# Spring Boot 프로젝트 포트 노출
+EXPOSE 8080
+
+# 프로젝트 실행 시 명령어
+CMD ["java", "-jar", "app.jar"]
