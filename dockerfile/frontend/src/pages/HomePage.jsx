@@ -15,7 +15,13 @@ export default function HomePage() {
     fetchArticles();
   }, []);
 
-  
+  // 삭제 후 상태 업데이트
+  const handleDelete = (id) => {
+    setArticles((prevArticles) =>
+      prevArticles.filter((article) => article.id !== id)
+    );
+  };
+
   return (
     <div>
       <ArticleForm fetchArticles={fetchArticles}></ArticleForm>
@@ -25,6 +31,7 @@ export default function HomePage() {
             key={article.id}
             article={article}
             isDetail={false}
+            onDelete={handleDelete}
           ></Article>
         );
       })}

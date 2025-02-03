@@ -13,6 +13,10 @@ const articlesApi = {
     const response = await api.get(`articles/${id}`);
     return response.data;
   },
+  deleteArticle: async (id) => {
+    const response = await api.delete(`articles/${id}`);
+    return response.data;
+  },
 };
 
 export default articlesApi;
