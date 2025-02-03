@@ -15,49 +15,40 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ArticleService {
 
-	private final ArticleRepository articleRepository;
+    private final ArticleRepository articleRepository;
 
-	@Transactional
-	public ArticleResponseDto createArticle(ArticleRequestDto requestDto) {
+    @Transactional
+    public ArticleResponseDto createArticle(ArticleRequestDto requestDto) {
 
-		Article article = Article.builder()
-				.title(requestDto.getTitle())
-				.content(requestDto.getContent())
-				.build();
+        Article article = Article.builder().title(requestDto.getTitle()).content(requestDto.getContent()).build();
 
-		Article savedArticle = articleRepository.save(article);
+        Article savedArticle = articleRepository.save(article);
 
-		return toResponseDto(savedArticle);
-	}
+        return toResponseDto(savedArticle);
+    }
 
-	@Transactional
-	public List<ArticleResponseDto> getArticles() {
+    @Transactional
+    public List<ArticleResponseDto> getArticles() {
 
-		return articleRepository.findAll()
-				.stream()
-				.map(this::toResponseDto)
-				.collect(Collectors.toList());
-	}
+        return articleRepository.findAll().stream().map(this::toResponseDto).collect(Collectors.toList());
+    }
 
-  @Transactional
-	public ArticleResponseDto getArticleById(Long id)  {
-		Article article = articleRepository.findById(id)
-            .orElseThrow(() -> new IllegalArgumentException("Article not found with id: " + id));
+    @Transactional
+    public ArticleResponseDto getArticleById(Long id) {
+        Article article = articleRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Article 정보가 존재하지 않습니다" + id));
+        return toResponseDto(article);
+    }
 
 
-		return toResponseDto(article);
-	}
+    @Transactional
+    public void deleteArticleById(Long id) {
+        Article article = articleRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Article 정보가 존재하지 않습니다" + id));
+        articleRepository.deleteById(id);
+    }// deleteArticleById() end
 
+    private ArticleResponseDto toResponseDto(Article article) {
 
-	private ArticleResponseDto toResponseDto(Article article) {
+        return ArticleResponseDto.builder().id(article.getId()).title(article.getTitle()).content(article.getContent()).createdAt(article.getCreatedAt()).updatedAt(article.getUpdatedAt()).build();
 
-		return ArticleResponseDto.builder()
-				.id(article.getId())
-				.title(article.getTitle())
-				.content(article.getContent())
-				.createdAt(article.getCreatedAt())
-				.updatedAt(article.getUpdatedAt())
-				.build();
-
-	}
+    }
 }
