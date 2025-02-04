@@ -42,6 +42,13 @@ dependencies {
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+
+    // 웹소켓
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework:spring-messaging'  // STOMP 메시징을 위한 의존성
+    implementation 'org.webjars:sockjs-client:1.5.1'  // SockJS 클라이언트 라이브러리
+    implementation 'org.webjars:stomp-websocket:2.3.4'  // STOMP 클라이언트 라이브러리
 }
 
 tasks.named('test') {
