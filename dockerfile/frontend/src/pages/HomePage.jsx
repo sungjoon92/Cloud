@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import articlesApi from "../api/articlesApi";
 import ArticleForm from "../components/ArticleForm";
 import Article from "../components/Article";
+import ChatApp from "../components/ChatApp"; // ChatApp 컴포넌트 경로 확인
 
 export default function HomePage() {
   const [articles, setArticles] = useState([]);
+  const [isChatRoomOpen, setIsChatRoomOpen] = useState(false); // 채팅방 상태 추가
 
   async function fetchArticles() {
     const response = await articlesApi.getArticles();
@@ -15,11 +17,14 @@ export default function HomePage() {
     fetchArticles();
   }, []);
 
-  // 삭제 후 상태 업데이트
   const handleDelete = (id) => {
     setArticles((prevArticles) =>
       prevArticles.filter((article) => article.id !== id)
     );
+  };
+
+  const createChatRoom = () => {
+    setIsChatRoomOpen(true); // 채팅방 열기
   };
 
   return (
@@ -35,6 +40,10 @@ export default function HomePage() {
           ></Article>
         );
       })}
+      <button onClick={() => createChatRoom(true)}>채팅방 생성</button>
+
+      {/* 채팅방이 열렸을 때만 ChatApp을 렌더링 */}
+      {isChatRoomOpen && <ChatApp />}
     </div>
   );
 }
